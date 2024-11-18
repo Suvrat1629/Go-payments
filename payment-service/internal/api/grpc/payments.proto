@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "./grpc;grpc";
+
+service PaymentService {
+  rpc MakePayment (PaymentRequest) returns (PaymentResponse);
+  rpc GetPaymentStatus (PaymentStatusRequest) returns (PaymentStatusResponse);
+}
+
+message PaymentRequest {
+  string sender_id = 1;
+  string receiver_id = 2;
+  double amount = 3;
+  string currency = 4;
+}
+
+message PaymentResponse {
+  string transaction_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message PaymentStatusRequest {
+  string payment_id = 1;
+}
+
+message PaymentStatusResponse {
+  string status = 1;
+}
