@@ -1,4 +1,4 @@
-Here's a README format for your project, based on the description you provided:
+Here's a README format for user authentication, based on the description you provided:
 
 ---
 
