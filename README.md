@@ -1,6 +1,3 @@
-Here's a README format for user authentication, based on the description you provided:
-
----
 
 # Authentication API with JWT and PostgreSQL
 
