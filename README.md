@@ -1,6 +1,6 @@
-# Project Overview
+# Go-Payments Project
 
-Welcome to the project! This repository has multiple branches, each serving a different part of the application. Below you can find links to the relevant README files for each branch:
+Welcome to the **Go-Payments** project! This repository contains multiple components of a payment system that are managed in different branches. Below are the links to detailed information for each branch.
 
 ## Table of Contents
 
@@ -11,46 +11,31 @@ Welcome to the project! This repository has multiple branches, each serving a di
 
 ## 1. User Authentication (`user-auth` branch)
 
-For detailed information on setting up and working with the user authentication system, refer to the README in the [`user-auth`](https://github.com/your-username/your-repo-name/tree/user-auth) branch. It covers:
+For details about the **User Authentication** module, please refer to the `README.md` in the [**user-auth** branch](https://github.com/Suvrat1629/Go-payments/blob/user-auth/README.md).
 
-- Setting up authentication
+This module handles the authentication and authorization logic, including:
+
 - User registration
-- Login functionality
-- JWT token handling
-- Security best practices
-
-You can find the README here:  
-[User Authentication README](https://github.com/your-username/your-repo-name/blob/user-auth/README.md)
+- Login and token generation
+- Access control and permissions
 
 ---
 
 ## 2. Payment System (`payment` branch)
 
-For detailed information on how the payment system works, including how to configure and use the payment-related features, check out the README in the [`payment`](https://github.com/your-username/your-repo-name/tree/payment) branch. This includes:
+For details about the **Payment System** module, please refer to the `README.md` in the [**payment** branch](https://github.com/Suvrat1629/Go-payments/blob/payment/README.md).
 
-- Payment processing flow
-- Database configuration for payments
-- Integrating with external payment gateways (if any)
-- gRPC and HTTP APIs for payments
-- Asynchronous payment status updates via RabbitMQ
+This module includes:
 
-You can find the README here:  
-[Payment System README](https://github.com/your-username/your-repo-name/blob/payment/README.md)
+- Payment processing logic
+- Transaction handling
+- Integration with RabbitMQ for messaging
+- Database management for storing payment data
 
 ---
 
-## How to switch branches
+## Getting Started
 
-If you're using Git locally, you can switch to the appropriate branch by running:
+Each module (authentication and payment) has its own set of setup instructions, configuration requirements, and usage details. Please follow the respective documentation in each branch for comprehensive instructions on how to get started with that part of the project.
 
-```bash
-git checkout user-auth    # For the User Authentication branch
-```
-
-or
-
-```bash
-git checkout payment      # For the Payment System branch
-```
-
----
+Feel free to explore both components for a complete understanding of the Go-Payments system.
