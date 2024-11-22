@@ -1,176 +1,210 @@
 # Go Payments System
 
-This project is a payment processing system built with Go, gRPC, PostgreSQL, RabbitMQ, and Protobuf. It supports basic payment processing functionalities, such as making payments, checking payment status, and updating payment statuses. The system also integrates with RabbitMQ to handle payment updates asynchronously.
+This is a simple payment system written in Go, which allows users to make payments, check payment status, and receive status updates via gRPC and HTTP APIs. It also integrates with RabbitMQ to handle asynchronous payment status updates.
 
 ## Table of Contents
 
-- [Project Structure](#project-structure)
-- [Technologies Used](#technologies-used)
-- [Setup Instructions](#setup-instructions)
-- [API Endpoints](#api-endpoints)
-- [gRPC Services](#grpc-services)
-- [How It Works](#how-it-works)
+1. [File Structure](#file-structure)
+2. [Overview](#overview)
+3. [Configuration](#configuration)
+   - [1. Database URL](#1-database-url)
+   - [2. RabbitMQ URL](#2-rabbitmq-url)
+   - [3. Config File Example](#3-config-file-example)
+4. [Dependencies](#dependencies)
+5. [Running the Application](#running-the-application)
+   - [1. Clone the repository](#1-clone-the-repository)
+   - [2. Install dependencies](#2-install-dependencies)
+   - [3. Set up the Database](#3-set-up-the-database)
+   - [4. Start RabbitMQ](#4-start-rabbitmq)
+   - [5. Run the Application](#5-run-the-application)
+6. [HTTP Endpoints](#http-endpoints)
+   - [1. Make Payment](#1-make-payment-http)
+   - [2. Get Payment Status](#2-get-payment-status-http)
+7. [gRPC Service](#grpc-service)
 
-## Project Structure
+---
 
-The project is organized as follows:
+## File Structure
 
 ```
-/Go-payments
-├── /internal
-│   ├── /api
-│   │   └── /grpc
-│   │       ├── payment_handler.go        # Handles payment logic and communication with RabbitMQ, DB
-│   │       ├── proto                     # Protobuf definitions and gRPC server implementation
-│   │       └── main.go                   # Main entry point to start the server
-│   ├── /db
-│   │   └── db.go                        # Database connection and queries (PostgreSQL)
-│   ├── /rabbitmq
-│   │   └── rabbitmq.go                  # RabbitMQ connection and message publishing/consuming logic
-│   ├── /config
-│   │   └── config.go                    # Configuration loading (e.g., DB URL, RabbitMQ URL)
-│   └── /proto
-│       └── grpc
-│           └── payment.proto            # Protobuf definition of payment-related messages and services
-└── /migrations                           # Database migrations (optional)
-└── /scripts                              # Helper scripts (e.g., to setup environment or run tests)
-└── README.md                            # Project overview and setup instructions
+/internal
+  ├── /api
+  │    └── /grpc
+  │         ├── payment_handler.go
+  │         ├── proto
+  │         └── main.go
+  ├── /db
+  ├── /rabbitmq
+  └── /config
+/proto
 ```
 
-- **internal/api/grpc/payment_handler.go**: Handles gRPC requests related to payments, including making payments, updating payment statuses, and querying payment status.
-- **internal/db/db.go**: Manages database connections and queries to store and retrieve payment information.
-- **internal/rabbitmq/rabbitmq.go**: Provides functionality for connecting to RabbitMQ and publishing/consuming messages related to payment status updates.
-- **internal/config/config.go**: Loads application configuration such as database connection strings and RabbitMQ URLs.
-- **internal/proto/grpc/payment.proto**: Defines the Protobuf messages and gRPC service for payment processing.
+---
 
-## Technologies Used
+## Overview
 
-- **Go**: Programming language used to implement the backend services.
-- **gRPC**: Remote Procedure Call (RPC) framework used to handle client-server communication.
-- **PostgreSQL**: Relational database to store payment information.
-- **RabbitMQ**: Message broker to handle asynchronous payment updates.
-- **Protobuf**: Serialization format for communication between services (gRPC).
+The system supports:
+- **Making payments**: Using gRPC (`/make-payment` endpoint in the Echo server).
+- **Checking payment status**: Using gRPC (`/get-payment-status` endpoint in the Echo server).
+- **Asynchronous updates**: Using RabbitMQ to listen for updates on payment statuses.
 
-## Setup Instructions
+### Key Components:
+- **gRPC Server**: Handles payment requests and status updates.
+- **Database (PostgreSQL)**: Stores payments and their statuses.
+- **RabbitMQ**: Sends and receives payment status updates.
 
-### Prerequisites
+---
 
-1. Install Go (version 1.18+)
-2. Install PostgreSQL and RabbitMQ on your local machine, or use a cloud service.
-3. Install required Go dependencies.
+## Configuration
 
-### Clone the repository
+### 1. Database URL
 
-```bash
-git clone https://github.com/Go-payments/Go-payments.git
-cd Go-payments
+The database connection URL is located in the `/internal/config/config.go` file. You can update the following line with the appropriate database connection URL:
+
+```go
+DBURL: "postgres://username:password@hostname:port/database",
 ```
 
-### Install dependencies
+Modify the connection string according to your database configuration:
+- **PostgreSQL** connection string example:  
+  `postgres://user:password@localhost:5432/payments`
+  
+  Where:
+  - `user`: the PostgreSQL username
+  - `password`: the PostgreSQL password
+  - `localhost`: the hostname of the database server
+  - `5432`: the PostgreSQL port (change if necessary)
+  - `payments`: the database name
 
-Run the following command to install the necessary dependencies:
+Example for **MySQL**:
+```go
+DBURL: "mysql://username:password@hostname:port/database",
+```
+
+### 2. RabbitMQ URL
+
+Similarly, RabbitMQ's connection URL is set in the same `config.go` file. You can change the RabbitMQ URL by modifying the following line:
+
+```go
+RabbitMQURL: "amqp://guest:guest@localhost:5672/",
+```
+
+Update this URL to reflect your RabbitMQ configuration:
+- The default RabbitMQ connection URL is `amqp://guest:guest@localhost:5672/`, where:
+  - `guest`: the username
+  - `guest`: the password
+  - `localhost`: the hostname of the RabbitMQ server
+  - `5672`: the default RabbitMQ port
+
+If you're running RabbitMQ on a custom host, change `localhost` to the actual hostname or IP address.
+
+### 3. Config File Example
+
+Here is how the `LoadConfig` function in `/internal/config/config.go` should look like after modifying the URLs:
+
+```go
+package config
+
+import "log"
+
+// Config struct holds the configuration values
+type Config struct {
+	DBURL       string
+	RabbitMQURL string
+}
+
+// LoadConfig loads the configuration for the application
+func LoadConfig() *Config {
+	return &Config{
+		// Change the database URL here
+		DBURL:      "postgres://user:password@localhost:5432/payments", // Replace with your database URL
+		// Change RabbitMQ URL here
+		RabbitMQURL: "amqp://guest:guest@localhost:5672/", // Replace with your RabbitMQ URL
+	}
+}
+```
+
+---
+
+## Dependencies
+
+The following dependencies are required to run the application:
+
+- Go 1.18 or higher
+- PostgreSQL database
+- RabbitMQ server
+- gRPC libraries (for defining and using gRPC services)
+- Protobuf compiler (`protoc`)
+
+You can install dependencies using Go modules:
 
 ```bash
 go mod tidy
 ```
 
-### Configuration
+---
 
-Configure your environment by updating the values in the `config.go` file under `/internal/config/`:
+## Running the Application
 
-- **DBURL**: Your PostgreSQL connection string (e.g., `postgres://user:password@localhost:5432/payments`)
-- **RabbitMQURL**: URL of your RabbitMQ server (e.g., `amqp://guest:guest@localhost:5672/`)
-
-Alternatively, you can set these configurations as environment variables:
+### 1. Clone the repository
 
 ```bash
-export DB_URL="postgres://user:password@localhost:5432/payments"
-export RABBITMQ_URL="amqp://guest:guest@localhost:5672/"
+git clone https://github.com/your-username/go-payments.git
+cd go-payments
 ```
 
-### Database Setup
+### 2. Install dependencies
 
-Ensure you have a PostgreSQL database running and a table to store payments:
+Run `go mod tidy` to install all the dependencies.
 
-```sql
-CREATE TABLE payments (
-    transaction_id VARCHAR PRIMARY KEY,
-    sender_id VARCHAR NOT NULL,
-    receiver_id VARCHAR NOT NULL,
-    amount FLOAT NOT NULL,
-    status VARCHAR NOT NULL
-);
-```
+### 3. Set up the Database
 
-### Running the Application
+Ensure your PostgreSQL database is set up and running. You may need to create the `payments` table manually, or you can write a migration script based on the `SavePayment` function.
 
-1. **Start the gRPC Server**:
+### 4. Start RabbitMQ
+
+Make sure RabbitMQ is installed and running on your machine or use a cloud-based RabbitMQ service. The default URL is `amqp://guest:guest@localhost:5672/`, but you can update it in the `config.go` file as mentioned earlier.
+
+### 5. Run the Application
+
+After modifying the configuration, you can start the application with:
 
 ```bash
 go run internal/api/grpc/main.go
 ```
 
-The gRPC server will run on port `50051` by default.
+This will start both the **gRPC server** on port `50051` and the **HTTP server** on port `8080`.
 
-2. **Start the HTTP Server (Echo)**:
+---
 
-In a separate terminal window, start the Echo HTTP server to expose REST endpoints:
+## HTTP Endpoints
+
+The following HTTP endpoints are exposed by the application:
+
+- `POST /make-payment`: Make a payment (calls the `MakePayment` gRPC service).
+- `POST /get-payment-status`: Get the status of a payment (calls the `GetPaymentStatus` gRPC service).
+
+### 1. Make Payment (HTTP)
 
 ```bash
-go run internal/api/grpc/main.go
+curl -X POST http://localhost:8080/make-payment -d '{"sender_id": "user1", "receiver_id": "user2", "amount": 100.00, "currency": "USD"}' -H "Content-Type: application/json"
 ```
 
-The HTTP server will run on port `8080`.
+### 2. Get Payment Status (HTTP)
 
-### Testing the API
-
-1. **Make a Payment**:
-
-Send a `POST` request to `http://localhost:8080/make-payment` with the following JSON body:
-
-```json
-{
-  "sender_id": "user123",
-  "receiver_id": "user456",
-  "amount": 100.50,
-  "currency": "USD"
-}
+```bash
+curl -X POST http://localhost:8080/get-payment-status -d '{"transaction_id": "some-transaction-id"}' -H "Content-Type: application/json"
 ```
 
-2. **Check Payment Status**:
+---
 
-Send a `POST` request to `http://localhost:8080/get-payment-status` with the following JSON body:
+## gRPC Service
 
-```json
-{
-  "transaction_id": "your_transaction_id"
-}
-```
+The application also exposes the following gRPC services:
 
-### gRPC API
+- `MakePayment(PaymentRequest)`: Processes a payment and returns a transaction ID.
+- `GetPaymentStatus(PaymentStatusRequest)`: Retrieves the payment status for a given transaction ID.
+- `UpdatePaymentStatus(PaymentUpdateRequest)`: Updates the status of a payment.
 
-The system also exposes gRPC services for payment processing. To interact with the gRPC server, you can use the `grpc` client as shown in the examples:
+---
 
-- **MakePayment**: `rpc MakePayment(PaymentRequest) returns (PaymentResponse);`
-- **GetPaymentStatus**: `rpc GetPaymentStatus(PaymentStatusRequest) returns (PaymentStatusResponse);`
-- **UpdatePaymentStatus**: `rpc UpdatePaymentStatus(PaymentUpdateRequest) returns (PaymentUpdateResponse);`
-
-You can generate Go client code using the `protoc` tool from the provided `.proto` files.
-
-### Database Migrations
-
-You can optionally add database migrations under the `/migrations` directory to handle schema changes.
-
-## How It Works
-
-1. **Make a Payment**:
-   - When a payment request is made, the system validates the request (e.g., amount must be greater than zero).
-   - It generates a unique transaction ID and stores the payment details in the PostgreSQL database with a "PENDING" status.
-   - The system publishes a message to RabbitMQ with the payment status update, which can be consumed by other services or applications to perform follow-up actions.
-
-2. **Payment Status Update**:
-   - The system listens to RabbitMQ for status updates (e.g., successful or failed payments).
-   - When a message is received, it updates the status of the corresponding payment in the database.
-
-3. **Check Payment Status**:
-   - The system allows querying the payment status via a REST or gRPC endpoint.
