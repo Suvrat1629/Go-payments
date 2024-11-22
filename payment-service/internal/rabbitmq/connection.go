@@ -1,74 +1,118 @@
 package rabbitmq
 
 import (
-	"encoding/json"
+	"fmt"
 	"log"
-
-	"github.com/Go-payments/internal/config"
 	"github.com/streadway/amqp"
 	"google.golang.org/protobuf/proto"
 )
 
+// Connection wraps the AMQP connection to simplify usage.
 type Connection struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+	*amqp.Connection
+	channel *amqp.Channel // Persistent channel for reuse
 }
 
-func Connect(cfg config.Config) (*Connection, error) {
-	conn, err := amqp.Dial(cfg.RabbitMQDSN)
+// Connect establishes a connection to RabbitMQ and creates a persistent channel.
+func Connect() (*Connection, error) {
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/") // Replace with your RabbitMQ URL if needed
 	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+		return nil, fmt.Errorf("failed to connect to RabbitMQ: %v", err)
 	}
-	channel, err := conn.Channel()
+
+	// Create a persistent channel for reuse
+	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalf("Failed to create RabbitMQ channel: %v", err)
+		conn.Close() // Close the connection if we fail to create the channel
+		return nil, fmt.Errorf("failed to open a channel: %v", err)
 	}
-	return &Connection{conn: conn, channel: channel}, nil
+
+	// Return the custom connection object with the channel
+	return &Connection{
+		Connection: conn,
+		channel:    ch,
+	}, nil
 }
 
-// Publish serializes the message body and sends it to RabbitMQ.
-func (c *Connection) Publish(queueName string, body interface{}) error {
-	// Serialize the body (Assuming protobuf serialization)
-	var bodyBytes []byte
-	var err error
+// Publish sends a message to a RabbitMQ queue in Protobuf format.
+func (conn *Connection) Publish(queueName string, message proto.Message) error {
+	// Reuse the persistent channel
+	ch := conn.channel
 
-	// If the body is a proto message, serialize using proto.Marshal
-	switch v := body.(type) {
-	case proto.Message:
-		bodyBytes, err = proto.Marshal(v)
-		if err != nil {
-			log.Printf("Failed to serialize message to protobuf: %v", err)
-			return err
-		}
-		// If the body is a generic interface{}, serialize it to JSON
-	default:
-		bodyBytes, err = json.Marshal(v)
-		if err != nil {
-			log.Printf("Failed to serialize message to JSON: %v", err)
-			return err
-		}
-	}
-
-	// Publish the message to the specified queue
-	err = c.channel.Publish(
-		"",        // exchange
-		queueName, // routing key (queue name)
-		false,     // mandatory
-		false,     // immediate
-		amqp.Publishing{
-			ContentType: "application/json", // or "application/protobuf" if using protobuf
-			Body:        bodyBytes,
-		},
+	// Declare the queue (ensure the queue exists)
+	q, err := ch.QueueDeclare(
+		queueName, // Queue name
+		false,     // Non-durable (should match the existing queue)
+		false,     // Non-auto-delete
+		false,     // Non-exclusive
+		false,     // Non-passive
+		nil,       // No additional arguments
 	)
 	if err != nil {
-		log.Printf("Failed to publish message to RabbitMQ: %v", err)
-		return err
+		return fmt.Errorf("failed to declare a queue: %v", err)
 	}
 
-	return nil
+	// Marshal the Protobuf message into a byte slice
+	body, err := proto.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %v", err)
+	}
+
+	// Publish the message to the queue
+	err = ch.Publish(
+		"",        // Default exchange
+		q.Name,    // Queue name
+		false,     // If false, the message will not be persisted if RabbitMQ crashes
+		false,     // If false, the message will not be delivered to consumers if they are not active
+		amqp.Publishing{
+			ContentType: "application/protobuf",
+			Body:        body, // Message body in Protobuf format
+		},
+	)
+	return err
 }
 
-func (c *Connection) Close() {
-	c.channel.Close()
-	c.conn.Close()
+// Consume listens for messages from a specified queue and unmarshals them into Protobuf.
+func (conn *Connection) Consume(queueName string) (<-chan amqp.Delivery, error) {
+	// Reuse the persistent channel
+	ch := conn.channel
+
+	// Declare the queue to ensure it exists
+	_, err := ch.QueueDeclare(
+		queueName, // Queue name
+		false,     // Non-durable
+		false,     // Non-auto-delete
+		false,     // Non-exclusive
+		false,     // Non-passive
+		nil,       // No additional arguments
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to declare a queue: %v", err)
+	}
+
+	// Start consuming messages from the queue
+	msgs, err := ch.Consume(
+		queueName, // Queue name
+		"",        // Consumer name (leave empty for automatic name generation)
+		true,      // Auto-acknowledge messages
+		false,     // Don't use exclusive access to the queue
+		false,     // Don't make the consumer a priority consumer
+		false,     // No wait for delivery
+		nil,       // No additional arguments
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start consuming messages: %v", err)
+	}
+
+	return msgs, nil
+}
+
+// Close shuts down the RabbitMQ connection and channel.
+func (conn *Connection) Close() {
+	if err := conn.channel.Close(); err != nil {
+		log.Printf("Failed to close channel: %v", err)
+	}
+	if err := conn.Connection.Close(); err != nil {
+		log.Printf("Failed to close connection: %v", err)
+	}
 }

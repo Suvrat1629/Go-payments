@@ -5,27 +5,47 @@ package payment;
 option go_package = "./grpc;grpc";
 
 service PaymentService {
-  rpc MakePayment (PaymentRequest) returns (PaymentResponse);
-  rpc GetPaymentStatus (PaymentStatusRequest) returns (PaymentStatusResponse);
+  // Makes a payment and returns the transaction details
+  rpc MakePayment(PaymentRequest) returns (PaymentResponse);
+
+  // Gets the payment status for a transaction
+  rpc GetPaymentStatus(PaymentStatusRequest) returns (PaymentStatusResponse);
+
+  // Updates the payment status (e.g., from pending to completed)
+  rpc UpdatePaymentStatus(PaymentUpdateRequest) returns (PaymentUpdateResponse);
 }
 
 message PaymentRequest {
-  string sender_id = 1;
-  string receiver_id = 2;
-  double amount = 3;
-  string currency = 4;
+  string sender_id = 1;   // The sender's ID
+  string receiver_id = 2;  // The receiver's ID
+  float amount = 3;        // The amount to be transferred
+  string currency = 4;     // Currency of the payment (e.g., USD)
 }
 
 message PaymentResponse {
-  string transaction_id = 1;
-  string status = 2;
-  string message = 3;
+  string transaction_id = 1; // Unique transaction ID
+  string status = 2;         // Payment status (e.g., 'SUCCESS', 'FAILED')
+  string message = 3;        // Message describing the outcome of the payment
 }
 
 message PaymentStatusRequest {
-  string payment_id = 1;
+  string transaction_id = 1; // Transaction ID for which status is being requested
 }
 
 message PaymentStatusResponse {
-  string status = 1;
+  string transaction_id = 1; // The transaction ID
+  string status = 2;         // Status of the payment (e.g., 'PENDING', 'COMPLETED', 'FAILED')
+  string message = 3;        // Message describing the payment status
+}
+
+// New message for updating payment status
+message PaymentUpdateRequest {
+  string transaction_id = 1; // Transaction ID for which the status is being updated
+  string status = 2;         // Updated status (e.g., 'COMPLETED', 'FAILED')
+}
+
+message PaymentUpdateResponse {
+  string transaction_id = 1; // The transaction ID being updated
+  string status = 2;         // The new status after the update
+  string message = 3;        // A message describing the result of the update
 }

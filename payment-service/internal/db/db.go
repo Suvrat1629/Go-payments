@@ -1,55 +1,74 @@
-// db/db.go
 package db
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 	"log"
 
-	"github.com/Go-payments/internal/config"
-	_ "github.com/go-sql-driver/mysql" // 
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 type DB struct {
 	*sql.DB
 }
 
-func Connect(cfg config.Config) (*DB, error) {
-	// Open a connection to the MySQL database
-	conn, err := sql.Open("mysql", cfg.MySQLDSN)
+// Connect initializes a new DB connection
+func Connect(dbURL string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		return nil, err // Return the error for proper handling
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	// Verify the connection with a ping
-	if err := conn.Ping(); err != nil {
-		conn.Close() // Close the connection on error
-		return nil, err
+	// Check if the connection is valid
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("failed to ping the database: %w", err)
 	}
 
-	log.Println("Connected to MySQL database.")
-	return &DB{conn}, nil
+	return db, nil
 }
 
-// SavePayment saves the payment to the database.
-func (db *DB) SavePayment(senderId, receiverId string, amount float64) error {
-	// Example query to insert payment into database
-	query := `INSERT INTO payments (sender_id, receiver_id, amount) VALUES (?, ?, ?)`
-	_, err := db.Exec(query, senderId, receiverId, amount)
+func (d *DB) SavePayment(senderId, receiverId string, amount float64, transactionID string) error {
+	// Prepare SQL statement to save payment
+	query := `
+		INSERT INTO payments (transaction_id, sender_id, receiver_id, amount, status)
+		VALUES ($1, $2, $3, $4, $5)`
+
+	// Execute the insert query with values
+	_, err := d.Exec(query, transactionID, senderId, receiverId, amount, "PENDING")
 	if err != nil {
 		return fmt.Errorf("failed to save payment: %v", err)
 	}
 	return nil
 }
 
-// GetPaymentStatus retrieves the payment status from the database.
-func (db *DB) GetPaymentStatus(paymentId string) (string, error) {
+
+// GetPaymentStatus retrieves the payment status for a given payment ID
+func (db *DB) GetPaymentStatus(paymentID string) (string, error) {
+	// Query to get the payment status
 	var status string
-	// Example query to fetch payment status from database
-	query := `SELECT status FROM payments WHERE payment_id = ?`
-	err := db.QueryRow(query, paymentId).Scan(&status)
+	err := db.QueryRow("SELECT status FROM payments WHERE transaction_id = $1", paymentID).Scan(&status)
 	if err != nil {
-		return "", fmt.Errorf("failed to get payment status: %v", err)
+		return "", fmt.Errorf("failed to fetch payment status: %v", err)
 	}
+
 	return status, nil
 }
+// UpdatePaymentStatus updates the status of a payment in the database
+func (db *DB) UpdatePaymentStatus(transactionID string, status string) error {
+	// Update the payment status based on the provided transaction ID
+	query := `UPDATE payments SET status = $1 WHERE transaction_id = $2`
+
+	// Execute the update query
+	_, err := db.Exec(query, status, transactionID)
+	if err != nil {
+		log.Printf("Error updating payment status for transaction %s: %v", transactionID, err)
+		return fmt.Errorf("failed to update payment status")
+	}
+
+	// If successful, return nil (no error)
+	log.Printf("Payment status updated to %s for transaction %s", status, transactionID)
+	return nil
+}
+
+
