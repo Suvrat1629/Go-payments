@@ -1,7 +1,3 @@
-Sure! Here's a sample `README.md` file for your project based on the provided structure:
-
----
-
 # Go Payments System
 
 This project is a payment processing system built with Go, gRPC, PostgreSQL, RabbitMQ, and Protobuf. It supports basic payment processing functionalities, such as making payments, checking payment status, and updating payment statuses. The system also integrates with RabbitMQ to handle payment updates asynchronously.
@@ -180,21 +176,3 @@ You can optionally add database migrations under the `/migrations` directory to 
 
 3. **Check Payment Status**:
    - The system allows querying the payment status via a REST or gRPC endpoint.
-
-## Contributing
-
-We welcome contributions to improve the system. Please follow these steps to contribute:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/your-feature`).
-3. Commit your changes (`git commit -am 'Add new feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Create a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
----
-
-This `README.md` file should give developers enough context to set up and contribute to your Go-based payment processing system. You can further expand it with any additional instructions or tooling you use for development and deployment.
