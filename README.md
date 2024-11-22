@@ -10,8 +10,6 @@ This project is a payment processing system built with Go, gRPC, PostgreSQL, Rab
 - [API Endpoints](#api-endpoints)
 - [gRPC Services](#grpc-services)
 - [How It Works](#how-it-works)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Project Structure
 
