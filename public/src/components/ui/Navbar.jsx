@@ -7,12 +7,12 @@ export default function Navbar() {
       {/* Sidebar */}
       <aside className="w-80 bg-black text-white flex flex-col">
         {/* Header */}
-        <div className="p-6 text-2xl font-bold border-b border-gray-700">
+        <div className="p-6 text-2xl font-bold border-b border-r border-gray-500">
           Lavi Rabbit
         </div>
 
         {/* Menu Items */}
-        <nav className="flex-1 p-6 space-y-4">
+        <nav className="flex-1 p-6 space-y-4 border-r border-gray-500">
           <MenuButton label="Home" to="/home" />
           <MenuButton label="Transactions" to="/transactions" />
           <MenuButton label="Balance" to="/balance" />

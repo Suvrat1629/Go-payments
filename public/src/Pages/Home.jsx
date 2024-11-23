@@ -29,7 +29,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="p-4 bg-black flex items-center justify-between">
+      <header className="p-4 bg-black flex items-center justify-between h-[81px] border-b border-gray-500">
         <h1 className="text-2xl font-bold">Pay Friends and Merchants</h1>
         <img
           src="/path/to/profile.jpg" // Replace with dynamic profile image
