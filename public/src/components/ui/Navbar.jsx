@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Navbar() {
   return (
@@ -28,11 +28,20 @@ export default function Navbar() {
 }
 
 // Menu Button Component
-const MenuButton = ({ label, to }) => (
-  <Link
-    to={to}
-    className="block w-full text-left px-4 py-3 rounded-md bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring focus:ring-gray-500"
-  >
-    {label}
-  </Link>
-);
+const MenuButton = ({ label, to }) => {
+  const location = useLocation(); // Get the current location
+
+  // Check if the current URL matches the 'to' prop to apply active class
+  const isActive = location.pathname === to;
+
+  return (
+    <Link
+      to={to}
+      className={`block w-full text-left px-4 py-3 rounded-md 
+        ${isActive ? "bg-gray-700 text-blue-400" : "bg-gray-800 text-white"}
+        hover:bg-gray-700 focus:outline-none focus:ring focus:ring-gray-500`}
+    >
+      {label}
+    </Link>
+  );
+};

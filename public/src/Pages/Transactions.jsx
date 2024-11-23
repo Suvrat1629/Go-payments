@@ -1,7 +1,11 @@
 import React from "react";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { HiArrowLeft } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 export default function Transactions() {
+  const navigate = useNavigate();
+
   // Sample transactions data
   const transactions = [
     {
@@ -43,12 +47,23 @@ export default function Transactions() {
     failed: "bg-red-600",
   };
 
+  // Go back handler
+  const handleGoBack = () => {
+    navigate(-1); // Navigate back to the previous page
+  };
+
   return (
     <div className="p-6 space-y-6 bg-black text-white h-full">
-      {/* Header */}
-      <h1 className="text-3xl font-bold border-b border-gray-700 pb-4">
-        Your Transactions
-      </h1>
+      {/* Header with Back Button */}
+      <div className="flex items-center space-x-4 border-b border-gray-700 pb-4">
+        <button
+          onClick={handleGoBack}
+          className="text-white text-3xl p-2 bg-gray-800 rounded-full hover:bg-gray-700"
+        >
+          <HiArrowLeft />
+        </button>
+        <h1 className="text-3xl font-bold">Your Transactions</h1>
+      </div>
 
       {/* Status Legend */}
       <div className="flex items-center space-x-6">
