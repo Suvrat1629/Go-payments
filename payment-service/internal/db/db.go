@@ -42,7 +42,6 @@ func (d *DB) SavePayment(senderId, receiverId string, amount float64, transactio
 	return nil
 }
 
-
 // GetPaymentStatus retrieves the payment status for a given payment ID
 func (db *DB) GetPaymentStatus(paymentID string) (string, error) {
 	// Query to get the payment status
@@ -54,6 +53,7 @@ func (db *DB) GetPaymentStatus(paymentID string) (string, error) {
 
 	return status, nil
 }
+
 // UpdatePaymentStatus updates the status of a payment in the database
 func (db *DB) UpdatePaymentStatus(transactionID string, status string) error {
 	// Update the payment status based on the provided transaction ID
@@ -71,4 +71,45 @@ func (db *DB) UpdatePaymentStatus(transactionID string, status string) error {
 	return nil
 }
 
+// GetAllPayments fetches all transactions from the database
+func (db *DB) GetAllPayments() ([]map[string]interface{}, error) {
+	// SQL query to fetch all payments
+	query := "SELECT transaction_id, sender_id, receiver_id, amount, status, created_at FROM payments"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch payments: %v", err)
+	}
+	defer rows.Close()
 
+	var payments []map[string]interface{}
+
+	for rows.Next() {
+		// Create a map to hold the row data
+		var transactionID, senderID, receiverID, status, createdAt string
+		var amount float64
+
+		// Scan the current row into variables
+		err := rows.Scan(&transactionID, &senderID, &receiverID, &amount, &status, &createdAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %v", err)
+		}
+
+		// Create a map for the row and append to the slice
+		payment := map[string]interface{}{
+			"transaction_id": transactionID,
+			"sender_id":      senderID,
+			"receiver_id":    receiverID,
+			"amount":         amount,
+			"status":         status,
+			"created_at":     createdAt,
+		}
+		payments = append(payments, payment)
+	}
+
+	// Check for any error encountered while iterating over rows
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error encountered during row iteration: %v", err)
+	}
+
+	return payments, nil
+}

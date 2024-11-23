@@ -112,6 +112,14 @@ func main() {
 		return c.JSON(http.StatusOK, resp)
 	})
 
+	e.GET("/transactions", func(c echo.Context) error {
+		transactions, err := customDB.GetAllPayments()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch transactions"})
+		}
+		return c.JSON(http.StatusOK, transactions)
+	})
+
 	// Start the Echo HTTP server
 	log.Println("Starting Echo HTTP server on :8080...")
 	e.Logger.Fatal(e.Start(":8080"))
