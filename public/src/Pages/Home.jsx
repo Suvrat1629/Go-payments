@@ -12,6 +12,14 @@ import {
   MdOutlineReceipt,
   MdPhoneAndroid,
 } from "react-icons/md";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"; // Ensure you have these components in your project
+import { Card, CardContent } from "@/components/ui/card"; // Ensure this as well
 
 export default function Home() {
   // Button data for rendering
@@ -26,6 +34,15 @@ export default function Home() {
     { label: "Mobile recharge", icon: <MdPhoneAndroid />, link: "/mobile-recharge" },
   ];
 
+  // Demo image data
+  const demoImages = [
+    "/path/to/image1.jpg",
+    "/path/to/image2.jpg",
+    "/path/to/image3.jpg",
+    "/path/to/image4.jpg",
+    "/path/to/image5.jpg",
+  ];
+
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Header */}
@@ -38,13 +55,32 @@ export default function Home() {
         />
       </header>
 
-      {/* Search Bar */}
+      {/* Image Carousel */}
       <div className="p-4">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full p-3 rounded-md bg-gray-800 text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-600"
-        />
+        <Carousel className="w-full max-w-5xl mx-auto">
+          <CarouselContent className="-ml-1">
+            {demoImages.map((image, index) => (
+              <CarouselItem
+                key={index}
+                className="pl-1 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+              >
+                <div className="p-1">
+                  <Card>
+                    <CardContent className="flex aspect-[16/9] items-center justify-center p-0 overflow-hidden">
+                      <img
+                        src={image}
+                        alt={`Slide ${index + 1}`}
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </div>
 
       {/* Actions Section */}
