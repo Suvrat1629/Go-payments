@@ -1,7 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { AiOutlineQrcode, AiOutlineContacts, AiOutlinePhone } from "react-icons/ai";
-import { MdAccountBalance, MdPayment, MdTransform, MdOutlineReceipt, MdPhoneAndroid } from "react-icons/md";
+import {
+  AiOutlineQrcode,
+  AiOutlineContacts,
+  AiOutlinePhone,
+} from "react-icons/ai";
+import {
+  MdAccountBalance,
+  MdPayment,
+  MdTransform,
+  MdOutlineReceipt,
+  MdPhoneAndroid,
+} from "react-icons/md";
 
 export default function Home() {
   // Button data for rendering
@@ -19,7 +29,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="p-4 bg-gray-800 flex items-center justify-between">
+      <header className="p-4 bg-black flex items-center justify-between">
         <h1 className="text-2xl font-bold">Pay Friends and Merchants</h1>
         <img
           src="/path/to/profile.jpg" // Replace with dynamic profile image
@@ -33,7 +43,7 @@ export default function Home() {
         <input
           type="text"
           placeholder="Search..."
-          className="w-full p-3 rounded-md bg-gray-800 text-gray-300 focus:outline-none"
+          className="w-full p-3 rounded-md bg-gray-800 text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-600"
         />
       </div>
 
@@ -43,7 +53,7 @@ export default function Home() {
           <Link
             key={index}
             to={action.link}
-            className="flex flex-col items-center justify-center bg-gray-800 text-blue-400 p-4 rounded-lg hover:bg-gray-700 transition"
+            className="flex flex-col items-center justify-center bg-gray-700 text-blue-400 p-4 rounded-lg shadow-md hover:bg-gray-600 transition transform hover:scale-105"
           >
             <div className="text-4xl mb-2">{action.icon}</div>
             <span className="text-sm text-gray-300 text-center">{action.label}</span>
@@ -52,7 +62,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="p-4 bg-gray-800 text-center text-sm">
+      <footer className="p-4 bg-black text-center text-sm">
         <p>UPI ID: priya@upi</p>
         <p>Balance: ₹0</p>
       </footer>
