@@ -10,7 +10,7 @@ import Receive from './Pages/Receive.jsx';
 import Transactions from './Pages/Transactions.jsx';
 import Balance from './Pages/Balance.jsx';
 import OnRamp from './Pages/OnRamp.jsx';
-import Navbar from './components/ui/navbar.jsx';
+import Navbar from './components/ui/Navbar.jsx';
 
 export default function App() {
   return (
@@ -21,7 +21,7 @@ export default function App() {
         <Navbar />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 overflow-y-auto">
+        <main className="flex-1  overflow-y-auto">
           {/* Define routes here */}
           <Routes>
             <Route path="/login" element={<Login />} />
