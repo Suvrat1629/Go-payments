@@ -16,7 +16,7 @@ import {
 export default function Home() {
   // Button data for rendering
   const actions = [
-    { label: "Scan any QR code", icon: <AiOutlineQrcode />, link: "/scan-qr" },
+    { label: "Scan any QR code", icon: <AiOutlineQrcode />, link: "/show-qr" },
     { label: "Pay contacts", icon: <AiOutlineContacts />, link: "/pay-contacts" },
     { label: "Pay phone number", icon: <AiOutlinePhone />, link: "/pay-phone" },
     { label: "Bank transfer", icon: <MdAccountBalance />, link: "/bank-transfer" },
@@ -27,15 +27,17 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
+    <div className="flex flex-col h-screen bg-black text-white">
       {/* Header */}
       <header className="p-4 bg-black flex items-center justify-between h-[81px] border-b border-gray-500">
         <h1 className="text-2xl font-bold">Pay Friends and Merchants</h1>
-        <img
-          src="/path/to/profile.jpg" // Replace with dynamic profile image
-          alt="Profile"
-          className="w-10 h-10 rounded-full"
-        />
+        <Link to="/user-dashboard">
+          <img
+            src="/path/to/profile.jpg" // Replace with dynamic profile image
+            alt="Profile"
+            className="w-10 h-10 rounded-full cursor-pointer"
+          />
+        </Link>
       </header>
 
       {/* Search Bar */}
