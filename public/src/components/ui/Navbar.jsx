@@ -13,7 +13,7 @@ export default function Navbar() {
 
         {/* Menu Items */}
         <nav className="flex-1 p-6 space-y-4">
-          <MenuButton label="Home" to="/home" />
+          <MenuButton label="Home" to="/" />
           <MenuButton label="Transactions" to="/transactions" />
           <MenuButton label="Balance" to="/balance" />
         </nav>
