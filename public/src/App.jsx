@@ -11,6 +11,7 @@ import Transactions from './Pages/Transactions.jsx';
 import Balance from './Pages/Balance.jsx';
 import OnRamp from './Pages/OnRamp.jsx';
 import Navbar from './components/ui/Navbar.jsx';
+import UserDashboard from './Pages/UserDashboard.jsx';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/balance" element={<Balance />} />
             <Route path="/onramp" element={<OnRamp />} />
+            <Route path="/user-dashboard" element={<UserDashboard />} />
           </Routes>
         </main>
       </div>
