@@ -6,13 +6,14 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-	"github.com/Go-payments/internal/db"
-	"github.com/Go-payments/internal/rabbitmq"
-	"github.com/Go-payments/internal/config"
 	grpc_server "github.com/Go-payments/internal/api/grpc"
-	"google.golang.org/grpc"
+	"github.com/Go-payments/internal/config"
+	"github.com/Go-payments/internal/db"
 	pb "github.com/Go-payments/internal/proto/grpc"
+	"github.com/Go-payments/internal/rabbitmq"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -46,7 +47,7 @@ func main() {
 	// Create a new gRPC server and register the PaymentService
 	grpcServer := grpc.NewServer()
 	pb.RegisterPaymentServiceServer(grpcServer, paymentHandler)
-    go paymentHandler.ListenForPaymentStatusUpdates()
+	go paymentHandler.ListenForPaymentStatusUpdates()
 
 	// Start a goroutine for gRPC server to run in the background
 	go func() {
@@ -58,6 +59,13 @@ func main() {
 
 	// Create and configure Echo HTTP server
 	e := echo.New()
+
+	// Enable CORS
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"}, // Adjust according to your frontend URL
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete},
+		AllowHeaders: []string{echo.HeaderContentType, echo.HeaderAuthorization},
+	}))
 
 	// Define the routes for HTTP requests
 	e.POST("/make-payment", func(c echo.Context) error {
