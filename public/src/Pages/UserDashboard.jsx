@@ -7,7 +7,7 @@ export default function UserDashboard() {
       {/* Header */}
       <header className="flex items-center justify-between p-4 border-b border-gray-500">
         <h1 className="text-2xl font-bold">User Dashboard</h1>
-        <Link to="/home">
+        <Link to="/">
           <button className="text-blue-400 hover:text-blue-600">Go Back</button>
         </Link>
       </header>

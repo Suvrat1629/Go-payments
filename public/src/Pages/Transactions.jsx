@@ -1,115 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { HiArrowLeft } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Transactions() {
   const navigate = useNavigate();
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample transactions data
-  const transactions = [
-    {
-      id: 1,
-      type: "Sent",
-      name: "John Doe",
-      publicId: "0x1234abcd",
-      status: "completed",
-      date: "2024-11-24",
-      time: "10:30 AM",
-      method: "UPI",
-    },
-    {
-      id: 2,
-      type: "Received",
-      name: "Alice Smith",
-      publicId: "0x5678efgh",
-      status: "pending",
-      date: "2024-11-23",
-      time: "3:15 PM",
-      method: "Crypto",
-    },
-    {
-      id: 3,
-      type: "Sent",
-      name: "Bob Brown",
-      publicId: "0x9abc1234",
-      status: "failed",
-      date: "2024-11-22",
-      time: "8:45 PM",
-      method: "ForEX",
-    },
-    {
-      id: 4,
-      type: "Received",
-      name: "Charlie Johnson",
-      publicId: "0x4567ijkl",
-      status: "completed",
-      date: "2024-11-21",
-      time: "12:00 PM",
-      method: "Crypto",
-    },
-    {
-      id: 5,
-      type: "Sent",
-      name: "Emma Wilson",
-      publicId: "0x7890mnop",
-      status: "pending",
-      date: "2024-11-20",
-      time: "9:30 AM",
-      method: "UPI",
-    },
-    {
-      id: 6,
-      type: "Received",
-      name: "Daniel Lee",
-      publicId: "0x1357qrst",
-      status: "completed",
-      date: "2024-11-19",
-      time: "5:00 PM",
-      method: "ForEX",
-    },
-    {
-      id: 7,
-      type: "Sent",
-      name: "Sophia Taylor",
-      publicId: "0x2468uvwx",
-      status: "failed",
-      date: "2024-11-18",
-      time: "8:00 AM",
-      method: "Crypto",
-    },
-    {
-      id: 8,
-      type: "Received",
-      name: "Mia Anderson",
-      publicId: "0x3690yzab",
-      status: "completed",
-      date: "2024-11-17",
-      time: "11:45 AM",
-      method: "UPI",
-    },
-    {
-      id: 9,
-      type: "Sent",
-      name: "Ethan Thomas",
-      publicId: "0x4829cdef",
-      status: "pending",
-      date: "2024-11-16",
-      time: "2:20 PM",
-      method: "ForEX",
-    },
-    {
-      id: 10,
-      type: "Received",
-      name: "Olivia Martinez",
-      publicId: "0x5731ghij",
-      status: "failed",
-      date: "2024-11-15",
-      time: "6:15 PM",
-      method: "Crypto",
-    },
-  ];
-  
   // Status color mapping
   const statusColors = {
     completed: "bg-green-600",
@@ -122,10 +22,43 @@ export default function Transactions() {
     navigate(-1); // Navigate back to the previous page
   };
 
+  // Fetch transactions from the Go backend
+  const fetchTransactions = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/payments");
+      setTransactions(response.data); // Assuming the API returns an array of transactions
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch transactions");
+      setLoading(false);
+    }
+  };
+
+  // Fetch transactions when the component mounts
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div>{error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6 bg-black text-white h-full">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden flex flex-col">
       {/* Header with Back Button */}
-      <div className="flex items-center space-x-4 border-b border-gray-700 pb-4">
+      <div className="p-6 flex items-center space-x-4 border-b border-gray-700">
         <button
           onClick={handleGoBack}
           className="text-white text-3xl p-2 bg-gray-800 rounded-full hover:bg-gray-700"
@@ -136,7 +69,7 @@ export default function Transactions() {
       </div>
 
       {/* Status Legend */}
-      <div className="flex items-center space-x-6">
+      <div className="p-6 flex items-center space-x-6">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 rounded-full bg-green-600"></div>
           <span className="text-sm text-gray-400">Completed</span>
@@ -151,8 +84,8 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* Transactions Cards */}
-      <div className="grid gap-4">
+      {/* Transactions List */}
+      <div className="p-6 overflow-y-auto flex-1 space-y-4">
         {transactions.map((transaction) => (
           <div
             key={transaction.id}
