@@ -27,6 +27,7 @@ export default function App() {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto">
           {/* Define routes here */}
           <Routes>
             <Route path="/login" element={<Login />} />
